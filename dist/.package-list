@@ -1,0 +1,17 @@
+manifest.json
+background.js
+content.js
+styles.css
+options.html
+options.js
+popup.html
+popup.js
+README.md
+PRIVACY.md
+icons/icon16.png
+icons/icon48.png
+icons/icon128.png
+lib/api-errors.js
+lib/post-extract.js
+lib/post-extract-threads.js
+lib/prompt.js

@@ -5,6 +5,18 @@ X と Threads の投稿に **Grok（xAI）** で参考分析を付ける Chrome 
 - ファクトチェック風の整理（公式ファクトチェックではありません）
 - 左右・イデオロギー寄りの**参考ラベル**
 
+## ローカルテスト（ZIP）
+
+```bash
+npm run release
+# → dist/grok-social-check-v1.0.0.zip
+```
+
+1. ZIP を解凍（フォルダ直下に `manifest.json`）
+2. `chrome://extensions` → デベロッパーモード ON →「パッケージ化されていない拡張機能を読み込む」
+3. 拡張のオプションで **xAI API キー**を保存
+4. X / Threads で **Grokでチェック**
+
 ## セットアップ（開発）
 
 ```bash

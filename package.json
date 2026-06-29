@@ -1,6 +1,6 @@
 {
   "name": "grok-social-check",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Chrome extension: Grok fact-check and political lean hints on X and Threads posts",
   "type": "module",
@@ -9,7 +9,9 @@
     "test": "node --test tests/unit/*.test.mjs",
     "smoke:chrome": "node tests/chrome-pc-smoke.mjs",
     "check": "npm run smoke && npm run test",
-    "check:pc": "npm run check && npm run smoke:chrome"
+    "check:pc": "npm run check && npm run smoke:chrome",
+    "package": "node scripts/package.mjs",
+    "release": "npm run check && npm run package"
   },
   "devDependencies": {
     "happy-dom": "^17.4.4",

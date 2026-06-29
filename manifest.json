@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Grok Social Check",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Fact-check and political-lean hints for X and Threads posts via Grok (xAI).",
   "permissions": ["storage"],
   "host_permissions": ["https://api.x.ai/*"],
@@ -39,18 +39,5 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["lib/post-extract.js"],
-      "matches": [
-        "https://x.com/*",
-        "https://twitter.com/*",
-        "https://www.threads.com/*",
-        "https://threads.com/*",
-        "https://www.threads.net/*",
-        "https://threads.net/*"
-      ]
-    }
-  ]
+  }
 }

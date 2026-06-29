@@ -46,12 +46,19 @@ function renderPanel(root, analysis, errorText) {
     )
     .join('');
 
+  const caveats = (analysis.caveats_ja || []).map((c) => `<li>${escapeHtml(c)}</li>`).join('');
+  const sources = (analysis.sources_to_verify || [])
+    .map((s) => `<li>${escapeHtml(s)}</li>`)
+    .join('');
+
   panel.innerHTML = `
     <div class="grok-check-title">Grok 参考分析（公式ファクトチェックではありません）</div>
     <p>${escapeHtml(analysis.summary_ja || '')}</p>
     <div><strong>ファクト</strong>: ${escapeHtml(fc.overall || '')}（信頼度: ${escapeHtml(fc.confidence || '')}）</div>
     <ul>${claims}</ul>
     <div><strong>左右寄り（参考）</strong>: ${escapeHtml(pl.label || '')}（${escapeHtml(pl.confidence || '')}）<br>${escapeHtml(pl.note_ja || '')}</div>
+    ${caveats ? `<div><strong>注意</strong><ul>${caveats}</ul></div>` : ''}
+    ${sources ? `<div><strong>自分で確認するなら</strong><ul>${sources}</ul></div>` : ''}
   `;
 }
 

@@ -36,7 +36,9 @@ const files = [
   'popup.js',
   'styles.css',
   'lib/post-extract.js',
+  'lib/post-extract-threads.js',
   'lib/prompt.js',
+  'lib/api-errors.js',
   'icons/icon16.png',
   'icons/icon48.png',
   'icons/icon128.png'
@@ -48,7 +50,7 @@ for (const rel of files) {
 }
 ok('required extension files exist');
 
-for (const rel of ['background.js', 'content.js', 'options.js', 'popup.js', 'lib/post-extract.js', 'lib/prompt.js']) {
+for (const rel of ['background.js', 'content.js', 'options.js', 'popup.js', 'lib/post-extract.js', 'lib/post-extract-threads.js', 'lib/prompt.js', 'lib/api-errors.js']) {
   const check = spawnSync('node', ['--check', path.join(extRoot, rel)], { encoding: 'utf8' });
   if (check.status !== 0) fail(`syntax error in ${rel}: ${check.stderr}`);
 }

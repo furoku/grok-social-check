@@ -1,4 +1,9 @@
 import { buildAnalysisPrompt, parseAnalysisJson } from './lib/prompt.js';
+import {
+  mapHttpError,
+  mapParseFailure,
+  messageForMissingToken
+} from './lib/api-errors.js';
 
 const DEFAULT_MODEL = 'grok-4-1-fast-non-reasoning';
 const API_URL = 'https://api.x.ai/v1/chat/completions';
@@ -18,7 +23,7 @@ function authHeader(apiKey) {
 
 async function callGrok({ apiKey, model, prompt }) {
   if (!apiKey) {
-    throw new Error('xAI API キーが未設定です。拡張のオプションから設定してください。');
+    throw new Error(messageForMissingToken());
   }
 
   const response = await fetch(API_URL, {
@@ -29,7 +34,7 @@ async function callGrok({ apiKey, model, prompt }) {
     },
     body: JSON.stringify({
       model: model || DEFAULT_MODEL,
-      temperature: 0.2,
+      temperature: 0.15,
       messages: [
         {
           role: 'system',
@@ -46,17 +51,20 @@ async function callGrok({ apiKey, model, prompt }) {
   try {
     body = JSON.parse(bodyText);
   } catch {
-    throw new Error(`xAI API 応答の解析に失敗 (${response.status})`);
+    throw new Error(mapHttpError(response.status, 'invalid json'));
   }
 
   if (!response.ok) {
-    const msg = body?.error?.message || bodyText.slice(0, 200);
-    throw new Error(`xAI API エラー (${response.status}): ${msg}`);
+    throw new Error(mapHttpError(response.status, body?.error?.message));
   }
 
   const content = body?.choices?.[0]?.message?.content;
   if (!content) throw new Error('xAI API から本文が返りませんでした');
-  return parseAnalysisJson(content);
+  try {
+    return parseAnalysisJson(content);
+  } catch {
+    throw new Error(mapParseFailure());
+  }
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
