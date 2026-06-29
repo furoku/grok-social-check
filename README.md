@@ -44,6 +44,8 @@ GROK_CHECK_SKIP_CHROME=1 npm run check
 npm run check:pc
 ```
 
+構築ループ・停止条件・微分目標は [`docs/LOOP_GOALS.md`](docs/LOOP_GOALS.md)。進捗は [`docs/progress-log.md`](docs/progress-log.md)。
+
 `smoke:chrome` は `channel: 'chrome'` でインストール済み **Google Chrome** を起動します（Chromium バンドルではなくデスクトップ Chrome）。
 
 ## 注意
