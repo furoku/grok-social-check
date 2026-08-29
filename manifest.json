@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Grok Social Check",
   "version": "1.0.0",
-  "description": "Fact-check and political-lean hints for X and Threads posts via Grok (xAI).",
+  "description": "AI-generated reference analysis for X and Threads posts via the xAI API.",
   "permissions": ["storage"],
   "host_permissions": ["https://api.x.ai/*"],
   "background": {
