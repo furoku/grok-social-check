@@ -1,70 +1,83 @@
 # Grok Social Check
 
-X と Threads の投稿に **Grok（xAI）** で参考分析を付ける Chrome 拡張（MV3）です。
+XとThreadsの投稿を、ボタンを押したときだけGrok（xAI）へ送り、内容を整理するChrome拡張です。
 
-- ファクトチェック風の整理（公式ファクトチェックではありません）
-- 左右・イデオロギー寄りの**参考ラベル**
+> **重要:** これは公式のファクトチェック機能ではありません。表示される事実整理や政治的傾向のラベルは、AIによる参考分析であり、正確性・中立性・完全性を保証しません。
 
-## ローカルテスト（ZIP）
+## できること
 
-```bash
-npm run release
-# → dist/grok-social-check-v1.0.0.zip
-```
+- 投稿ごとに「Grokでチェック」ボタンを表示
+- 主張、根拠、注意点をファクトチェック風に整理
+- 左右・イデオロギー寄りの傾向を参考ラベルとして表示
+- XとThreadsの投稿画面で利用
 
-1. ZIP を解凍（フォルダ直下に `manifest.json`）
-2. `chrome://extensions` → デベロッパーモード ON →「パッケージ化されていない拡張機能を読み込む」
-3. 拡張のオプションで **xAI API キー**を保存
-4. X / Threads で **Grokでチェック**
+## プライバシー
 
-## セットアップ（開発）
+- 投稿本文は、利用者がボタンを押したときだけxAI APIへ送信します
+- 投稿の自動収集やバックグラウンド送信は行いません
+- xAI APIキーは拡張機能の設定画面から入力し、`chrome.storage.sync`へ保存します
+- APIキーや投稿本文を開発者のサーバーへ送る仕組みはありません
+
+詳細は [PRIVACY.md](PRIVACY.md) をご覧ください。
+
+## 必要なもの
+
+- Google Chrome
+- xAI APIキー
+- ローカルでパッケージを作成するためのNode.js / npm
+
+## ローカルインストール
+
+この拡張はChromeウェブストアでは配布していません。リポジトリからZIPを作成し、展開したフォルダをChromeへ読み込みます。
 
 ```bash
 npm install
+npm run release
 ```
 
-拡張を Chrome で読み込む:
+`dist/grok-social-check-v1.0.0.zip` を展開したあと、次の手順で読み込みます。
 
-1. `chrome://extensions` → デベロッパーモード
-2. 「パッケージ化されていない拡張機能を読み込む」→ このリポジトリのルート
+1. Chromeで `chrome://extensions` を開く
+2. 「デベロッパーモード」を有効にする
+3. 「パッケージ化されていない拡張機能を読み込む」を選ぶ
+4. 展開したフォルダを指定する
+5. 拡張機能のオプションでxAI APIキーを保存する
 
-オプション画面で **xAI API キー**（`xaiToken`）を保存してください。キーはリポジトリに含めません。
+## 使い方
 
-## スモーク / テスト（PC Chrome 想定）
+1. XまたはThreadsを開く
+2. 対象の投稿に表示される「Grokでチェック」を押す
+3. AIの整理結果を、元の投稿や一次情報と照らして読む
+
+分析結果だけで重要な判断を行わず、必要に応じて元資料や信頼できる情報源を確認してください。
+
+## 開発・確認コマンド
 
 | コマンド | 内容 |
-|----------|------|
-| `npm run smoke` | manifest・必須ファイル・JS 構文 |
-| `npm run test` | 投稿抽出・JSON パース（happy-dom、ネット不要） |
-| `npm run smoke:chrome` | **PC の Google Chrome** に拡張をロードし、options と x.com で content script を確認 |
+| --- | --- |
+| `npm run smoke` | manifest、必須ファイル、JavaScript構文の確認 |
+| `npm run test` | 投稿抽出とJSON解析の単体テスト |
+| `npm run check` | smokeと単体テストを実行 |
+| `npm run smoke:chrome` | インストール済みPC版Chromeで拡張を読み込む確認 |
+| `npm run check:pc` | ローカルPC向けの一式確認 |
+| `npm run release` | 確認後に配布用ZIPを作成 |
 
-初回のみ Playwright 用 Chrome チャンネル:
+初回にPlaywright用のChromeチャンネルが必要な場合は、次を実行します。
 
 ```bash
 npx playwright install chrome
 ```
 
-ヘッドレス VM など Chrome が無い環境:
+Chromeを利用できない環境では、次のようにブラウザ確認だけを除外できます。
 
 ```bash
 GROK_CHECK_SKIP_CHROME=1 npm run check
 ```
 
-ローカル PC でフル確認:
+## 既知の制約
 
-```bash
-npm run check:pc
-```
+- x.comやThreadsの画面構造が変わると、ボタンが表示されなくなる場合があります
+- xAI APIの利用料金、モデル、応答形式は変更される場合があります
+- AIの出力には誤り、抜け、偏りが含まれる可能性があります
 
-構築ループ・停止条件・微分目標は [`docs/LOOP_GOALS.md`](docs/LOOP_GOALS.md)。進捗は [`docs/progress-log.md`](docs/progress-log.md)。
-
-`smoke:chrome` は `channel: 'chrome'` でインストール済み **Google Chrome** を起動します（Chromium バンドルではなくデスクトップ Chrome）。
-
-## 注意
-
-- 分析結果は AI の推論であり、事実認定や政治的評価の公式見解ではありません。
-- x.com の DOM は変わりやすく、ボタンが出ない場合はセレクタ更新が必要です。
-
-## ライセンス
-
-MIT（アイコンは暫定流用の場合は差し替えてください）
+構築時の検証目標は [`docs/LOOP_GOALS.md`](docs/LOOP_GOALS.md)、進捗記録は [`docs/progress-log.md`](docs/progress-log.md) にあります。
