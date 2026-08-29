@@ -1,19 +1,57 @@
-const DEFAULTS = {
-  xaiToken: '',
-  model: 'grok-4-1-fast-non-reasoning'
-};
+import {
+  DEFAULT_MODEL,
+  clearApiKey,
+  loadSettings,
+  saveSettings
+} from './lib/settings.js';
 
-async function load() {
-  const data = await chrome.storage.sync.get(DEFAULTS);
-  document.getElementById('xaiToken').value = data.xaiToken || '';
-  document.getElementById('model').value = data.model || DEFAULTS.model;
+const tokenInput = document.getElementById('xaiToken');
+const modelSelect = document.getElementById('model');
+const status = document.getElementById('status');
+const saveButton = document.getElementById('save');
+const clearButton = document.getElementById('clearKey');
+
+function setStatus(message, isError = false) {
+  status.textContent = message;
+  status.dataset.tone = isError ? 'error' : 'success';
 }
 
-document.getElementById('save').addEventListener('click', async () => {
-  const xaiToken = document.getElementById('xaiToken').value.trim();
-  const model = document.getElementById('model').value;
-  await chrome.storage.sync.set({ xaiToken, model });
-  document.getElementById('status').textContent = '保存しました。';
+async function load() {
+  try {
+    const data = await loadSettings();
+    tokenInput.value = data.xaiToken || '';
+    modelSelect.value = data.model || DEFAULT_MODEL;
+  } catch (error) {
+    setStatus(`設定を読み込めませんでした: ${String(error?.message || error)}`, true);
+  }
+}
+
+saveButton.addEventListener('click', async () => {
+  saveButton.disabled = true;
+  try {
+    await saveSettings({
+      xaiToken: tokenInput.value,
+      model: modelSelect.value
+    });
+    setStatus('この端末に保存しました。同期領域の旧キーは削除済みです。');
+  } catch (error) {
+    setStatus(`保存できませんでした: ${String(error?.message || error)}`, true);
+  } finally {
+    saveButton.disabled = false;
+  }
+});
+
+clearButton.addEventListener('click', async () => {
+  clearButton.disabled = true;
+  try {
+    await clearApiKey();
+    tokenInput.value = '';
+    setStatus('APIキーをこの端末と旧同期領域から削除しました。');
+  } catch (error) {
+    setStatus(`削除できませんでした: ${String(error?.message || error)}`, true);
+  } finally {
+    clearButton.disabled = false;
+  }
 });
 
 load();

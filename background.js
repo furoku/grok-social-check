@@ -4,22 +4,10 @@ import {
   mapParseFailure,
   messageForMissingToken
 } from './lib/api-errors.js';
+import { buildChatRequest } from './lib/api-request.js';
+import { loadSettings } from './lib/settings.js';
 
-const DEFAULT_MODEL = 'grok-4-1-fast-non-reasoning';
 const API_URL = 'https://api.x.ai/v1/chat/completions';
-
-async function getSettings() {
-  const data = await chrome.storage.sync.get({
-    xaiToken: '',
-    model: DEFAULT_MODEL,
-    cooldownSec: 8
-  });
-  return data;
-}
-
-function authHeader(apiKey) {
-  return 'Bearer ' + apiKey;
-}
 
 async function callGrok({ apiKey, model, prompt }) {
   if (!apiKey) {
@@ -29,21 +17,10 @@ async function callGrok({ apiKey, model, prompt }) {
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
-      Authorization: authHeader(apiKey),
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      model: model || DEFAULT_MODEL,
-      temperature: 0.15,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You analyze social posts for fact-check hints and political framing. Respond with a single JSON object only.'
-        },
-        { role: 'user', content: prompt }
-      ]
-    })
+    body: JSON.stringify(buildChatRequest({ model, prompt }))
   });
 
   const bodyText = await response.text();
@@ -72,14 +49,14 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   (async () => {
     try {
-      const settings = await getSettings();
+      const settings = await loadSettings();
       const prompt = buildAnalysisPrompt({
         platform: message.platform,
         postText: message.postText,
         authorHint: message.authorHint || ''
       });
       const analysis = await callGrok({
-        apiKey: settings['xaiToken'],
+        apiKey: settings.xaiToken,
         model: settings.model,
         prompt
       });
@@ -90,4 +67,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   })();
 
   return true;
+});
+
+loadSettings().catch((error) => {
+  console.warn('[Grok Social Check] secure storage initialization failed', error);
 });

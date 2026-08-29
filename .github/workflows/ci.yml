@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Static and unit checks
+        run: npm run check
+
+      - name: Audit high-severity dependencies
+        run: npm audit --audit-level=high
+
+      - name: Build release ZIP
+        run: npm run package
+
+      - name: Verify package contents
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import zipfile
+
+          version = json.loads(pathlib.Path('manifest.json').read_text())['version']
+          archive = pathlib.Path('dist') / f'grok-social-check-v{version}.zip'
+          required = {
+              'manifest.json', 'background.js', 'options.js', 'LICENSE',
+              'PRIVACY.md', 'SECURITY.md', 'lib/settings.js', 'lib/api-request.js'
+          }
+          with zipfile.ZipFile(archive) as zf:
+              names = set(zf.namelist())
+          missing = sorted(required - names)
+          if missing:
+              raise SystemExit(f'missing packaged files: {missing}')
+          print(f'verified {archive} ({archive.stat().st_size} bytes)')
+          PY
